@@ -31,19 +31,16 @@ This is an actual bucket rule, independent of Worker Cron cleanup. Issue #1 item
 
 Account IDs, database IDs, native namespace IDs and any credentials are kept out of Git. The deployed resource configuration exists only in ignored `worker/wrangler.review.jsonc`.
 
-## Still blocked / not passed
+## Current live follow-up
 
-- The cloud machine's HTTP request to the new staging endpoint was rejected by its egress proxy (`Tunnel connection failed: 403 Forbidden`). The exact hostname `spwc-inquiries-staging.wbspo1994.workers.dev` has been added to a saved network draft, preserving existing allowed domains. That draft must be saved/published and propagated before endpoint checks can run here.
-- The staging Worker's secret-list API returned no secrets. `TURNSTILE_SECRET_KEY` and `RESEND_API_KEY` have not been provisioned there. No invented or test key was installed in the deployed Worker.
-- Cloudflare API access to both the Turnstile widget list and the configured widget returned 403 / code 10000. The current token's successful Worker/D1/R2 access does not grant Turnstile widget access. Existing widgets were not modified.
-- Configure the correct real widget's secret and the owner's existing Resend sending key securely in **staging Worker settings**. The Turnstile secret must match the public widget key configured for the local frontend. Proxy-managed cloud secret placeholders must not be copied into Worker secrets as raw keys.
-- Actual endpoint responses, live Turnstile success/expiry/replay, owner inbox receipt, native rate-limit behavior, live cron retry/escalation/retention and remote R2 backup/restore are **unrun**. Provisioned bindings/cron metadata and prior local simulator results do not establish those live outcomes.
+Cloud environment revision 10 activated the staging hostname. Real Chromium and unmocked Playwright API requests now reach the Worker through the inherited proxy with TLS verification. Exact-Origin rejection and native limiter/recovery checks passed. Safe malformed/oversize payload rejection and three PII-free browser analytics events were observed.
+
+Provider-dependent checks remain blocked: repeated remote secret-list requests still return no deployed secrets, and the real Turnstile challenge returns 400 without a usable token. No inquiry persisted or real email was sent. The owner has authorized test notifications to the existing owner recipient. See [LIVE_MATRIX_STATUS.md](LIVE_MATRIX_STATUS.md) for the complete fourteen-item status and transport diagnosis; the earlier proxy tunnel rejection is resolved.
 
 ## Resume sequence
 
-1. Save/publish the cloud environment network draft containing the exact staging endpoint hostname. Verify it is present in the running network policy and that HTTP requests reach the Worker.
-2. Add `TURNSTILE_SECRET_KEY` and `RESEND_API_KEY` to `spwc-inquiries-staging` securely through its Worker settings. Do not post secrets in chat. Confirm secret names and challenge configuration without displaying values.
-3. Run the local frontend against the staging API with the real public widget key and execute each live matrix item in `STAGING.md`. Owner inbox receipt requires owner confirmation; HTTP mail acceptance alone is insufficient.
-4. Record live outcomes and clean up synthetic staging inquiries after testing. Public launch remains NO-GO until explicit review and owner approval.
+1. Securely add and **deploy** `TURNSTILE_SECRET_KEY` and `RESEND_API_KEY` in the exact staging Worker. Verify deployed names, never values.
+2. Check the configured real widget's site key, matching secret, and allowed local hostname `127.0.0.1`; resolve its challenge 400 responses. Do not bypass verification or substitute test keys.
+3. Resume the full matrix in `STAGING.md`, obtaining owner inbox confirmation after a successful real submission. Clean up synthetic staging records and restore any failure-injection changes.
 
-No production Pages, production DNS, production database/bucket, or existing Worker was modified. No public frontend CTA was enabled. Only isolated staging resource writes and read-only inspections of existing resource metadata occurred.
+No production Pages, production DNS, production database/bucket, or existing Worker was modified. No public frontend CTA was enabled. Public launch remains NO-GO.
