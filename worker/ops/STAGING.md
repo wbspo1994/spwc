@@ -17,7 +17,7 @@ The intended production configuration keeps the exact production Origin and prod
 
 ## Current external prerequisites
 
-Wrangler `whoami` reports unauthenticated. No `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `RESEND_API_KEY` or `TURNSTILE_SECRET_KEY` is injected into the cloud machine; environment credential metadata also has no binding. No staging resources or R2 lifecycle rule have been created or verified yet.
+Cloud environment revision 8 now provides working Cloudflare account access. The isolated staging D1/R2/Worker have been provisioned and the independent R2 lifecycle verified. See `STAGING_STATUS.md` for real-resource evidence. Remaining prerequisites are staging endpoint network access and the real Turnstile/Resend secrets in the staging Worker.
 
 Cloud environment settings need account access scoped to the intended staging account, with Worker, D1 and R2 provisioning permissions (and Turnstile widget management if provisioning a separate widget). `CLOUDFLARE_API_TOKEN` must be supplied securely there, never in chat or files. Supply the non-secret account ID in environment settings when required. Network access must allow `api.cloudflare.com`, `challenges.cloudflare.com`, `api.resend.com`, and the exact staging Worker hostname once it is known. Draft requirements have been saved; saved configuration alone does not apply credentials or prove readiness.
 
