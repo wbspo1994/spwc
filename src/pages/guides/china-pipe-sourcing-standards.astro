@@ -1,0 +1,52 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+  title="China pipe sourcing guide — how to specify pipe for RFQ"
+  description="How to write a complete pipe RFQ for Chinese suppliers: the four layers of a pipe specification, a full RFQ checklist, and why '304/DN100' is not enough."
+  path="/guides/china-pipe-sourcing-standards/"
+>
+<h1>China Pipe Sourcing Guide</h1>
+<p class="lede">How to specify steel pipe so a supplier can quote it correctly — and why "304/DN100" will get you the wrong pipe or no quote at all.</p>
+
+<div class="note"><strong>Scope note:</strong> this page explains how to <em>describe</em> pipe for sourcing. It makes no equivalence claims between Chinese (GB) and ASME standards — they are different systems, and this page does not map one to the other.</div>
+
+<h2>The four layers of a pipe specification</h2>
+<p>A complete pipe description has four independent layers. Missing any one of them leaves the supplier guessing:</p>
+<ol>
+  <li><strong>Dimensional standard</strong> — which table defines OD and wall. Examples: ASME B36.10, ASME B36.19, GB/T 14976, GB/T 12771. This is where "NPS 4 Sch 40" or "DN100 × 4" gets its meaning.</li>
+  <li><strong>Material grade</strong> — what the pipe is made of. Examples: 304, 316L, Q235B, 20#. Grade alone says nothing about size.</li>
+  <li><strong>Product / manufacturing standard</strong> — how the pipe is made and tested. Examples: GB/T 14976 (seamless stainless), GB/T 12771 (welded stainless), ASTM A312. This governs process, tolerances, and inspection.</li>
+  <li><strong>Order specification</strong> — the actual purchase details: OD × wall × length, quantity, ends, testing, surface, packaging, delivery terms.</li>
+</ol>
+
+<h2>Why "304/DN100" is not enough</h2>
+<p>"304/DN100" specifies only layer 2 (grade 304) and a nominal size hint. It leaves open:</p>
+<ul>
+  <li><strong>Wall thickness</strong> — DN100 could be 3 mm, 4 mm, 6 mm… each a different weight and price.</li>
+  <li><strong>Which OD series</strong> — "DN100" maps to 108 mm in some GB series and 114.3 mm in others. A 6.3 mm difference in OD changes everything downstream (flanges, fittings, supports).</li>
+  <li><strong>Seamless or welded</strong> — different price, different applications.</li>
+  <li><strong>Length, ends, testing</strong> — a 6 m plain-end pipe and a 12 m beveled-end pipe with UT testing are different products.</li>
+</ul>
+<p>A supplier receiving "304/DN100" must either guess (and guess wrong) or come back with five questions. A complete RFQ gets a faster, comparable quote.</p>
+
+<h2>Full RFQ checklist</h2>
+<p>Copy, fill in, and send. Every line you leave blank is a question back to you.</p>
+<ul>
+  <li>Dimensional standard + edition (e.g. ASME B36.10-2022, or the applicable GB/T number)</li>
+  <li>NPS/DN <strong>and</strong> Schedule — or explicit OD × wall thickness</li>
+  <li>Material grade (e.g. 304, 316L, Q235B) and product standard (e.g. ASTM A312, GB/T 14976)</li>
+  <li>Manufacturing process: seamless or welded (ERW/LSAW/SSAW)</li>
+  <li>Length: fixed (e.g. 6 m) or random; tolerance if fixed</li>
+  <li>Quantity: pieces or total metres/tonnage</li>
+  <li>Ends: plain, beveled (angle), threaded, grooved</li>
+  <li>Testing &amp; inspection: hydro test, UT/RT, PMI, third-party inspection (e.g. SGS/BV/TÜV)</li>
+  <li>Surface: pickled, polished (grain), black, galvanized, coated</li>
+  <li>Marking, packaging (bundles, seaworthy packing), delivery terms (EXW/FOB/CIF) and port</li>
+  <li>Mill test certificates required (e.g. EN 10204 3.1)</li>
+</ul>
+
+<h2>How to submit a specification</h2>
+<p>If you used the <a href="/steel-pipe-weight-calculator/">calculator</a>, your OD, wall, length, and quantity are already worked out — attach them with the four layers above. If you need help turning a rough requirement ("something like 304, about 100 mm") into a quotable spec, or finding potential supply channels in China, you can <a href="/about/">request sourcing assistance</a>.</p>
+</Layout>

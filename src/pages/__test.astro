@@ -1,0 +1,10 @@
+---
+// minimal repro
+---
+<html><body>
+<script define:vars={{ x: JSON.stringify({a: 1}) }}>
+  import { toMm } from '../lib/units';
+  const d = JSON.parse(x);
+  console.log(toMm(1, 'in'), d);
+</script>
+</body></html>

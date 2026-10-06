@@ -1,0 +1,101 @@
+---
+/**
+ * Shared page layout: SEO head, canonical, robots, OG, JSON-LD, nav, footer.
+ * - Canonical + OG URLs come from PUBLIC_SITE_URL (never hardcoded).
+ * - Indexability follows src/lib/site-mode.mjs: preview builds (unset /
+ *   placeholder PUBLIC_SITE_URL, or PUBLIC_NOINDEX=true) emit meta noindex
+ *   and keep robots.txt crawlable so the noindex is actually readable
+ *   (R6-P0-SEO1: Disallow:/ would blind the noindex signal). Production
+ *   builds (real PUBLIC_SITE_URL) emit no noindex.
+ */
+import { resolveSiteMode, shouldNoindex } from '../lib/site-mode.mjs';
+export interface Props {
+  title: string;
+  description: string;
+  path: string;
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+  noindexForce?: boolean;
+}
+
+const { title, description, path, jsonLd, noindexForce } = Astro.props;
+const siteUrl = (import.meta.env.PUBLIC_SITE_URL || 'https://example.pages.dev').replace(/\/$/, '');
+const brand = import.meta.env.PUBLIC_BRAND_NAME || 'PipeMetric';
+const pageUrl = `${siteUrl}${path}`;
+// R6-P0-SEO1: preview => meta noindex (robots.txt stays crawlable so the
+// signal is readable); production => indexable. Fail-closed on bad config.
+const mode = resolveSiteMode({ siteUrl, noindexFlag: import.meta.env.PUBLIC_NOINDEX });
+const noindex = noindexForce === true || shouldNoindex(mode);
+const fullTitle = title.includes(brand) ? title : `${title} | ${brand}`;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={pageUrl} />
+  {noindex && <meta name="robots" content="noindex, nofollow" />}
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content={brand} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={pageUrl} />
+  <meta name="twitter:card" content="summary" />
+  {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  <style>
+    :root { --fg: #1a1a1a; --muted: #5c5c5c; --line: #e2e2e2; --bg: #fff; --accent: #0b5fff; --warn: #b45309; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fg); background: var(--bg); margin: 0; line-height: 1.65; }
+    header.site { border-bottom: 1px solid var(--line); }
+    header.site .wrap, footer.site .wrap, main.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+    header.site .wrap { display: flex; align-items: center; gap: 20px; padding-top: 12px; padding-bottom: 12px; }
+    .brand { font-weight: 700; font-size: 1.1rem; text-decoration: none; color: var(--fg); }
+    nav.main { display: flex; gap: 16px; font-size: .92rem; flex-wrap: wrap; }
+    nav.main a { color: var(--muted); text-decoration: none; }
+    nav.main a:hover { color: var(--fg); text-decoration: underline; }
+    main.wrap { padding-top: 28px; padding-bottom: 64px; }
+    main.wrap h1 { font-size: 1.9rem; line-height: 1.25; margin: 0 0 8px; }
+    main.wrap h2 { font-size: 1.3rem; margin-top: 2.2em; }
+    main.wrap h3 { font-size: 1.05rem; margin-top: 1.6em; }
+    .lede { color: var(--muted); font-size: 1.05rem; margin: 0 0 1.5em; }
+    footer.site { border-top: 1px solid var(--line); margin-top: 32px; }
+    footer.site .wrap { display: flex; gap: 16px; align-items: center; padding-top: 16px; padding-bottom: 24px; font-size: .85rem; color: var(--muted); flex-wrap: wrap; }
+    footer.site a { color: var(--muted); }
+    .card { border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
+    .note { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 10px 14px; font-size: .9rem; }
+    table.data { width: 100%; border-collapse: collapse; font-size: .88rem; margin: 12px 0; }
+    table.data th, table.data td { border: 1px solid var(--line); padding: 6px 8px; text-align: right; }
+    table.data th:first-child, table.data td:first-child { text-align: left; }
+    table.data th { background: #f7f7f7; font-weight: 600; }
+    details.faq { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
+    details.faq summary { cursor: pointer; font-weight: 600; }
+    code { background: #f4f4f4; padding: 1px 5px; border-radius: 4px; font-size: .88em; }
+  </style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="/">{brand}</a>
+    <nav class="main" aria-label="Main">
+      <a href="/steel-pipe-weight-calculator/">Calculator</a>
+      <a href="/methodology/">Methodology</a>
+      <a href="/guides/china-pipe-sourcing-standards/">China sourcing guide</a>
+      <a href="/about/">About</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  <slot />
+</main>
+<footer class="site">
+  <div class="wrap">
+    <span>© {new Date().getFullYear()} {brand}. Theoretical estimates only.</span>
+    <a href="/privacy/">Privacy</a>
+    <a href="/terms/">Terms</a>
+    <a href="/methodology/">Methodology</a>
+  </div>
+</footer>
+</body>
+</html>

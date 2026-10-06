@@ -1,0 +1,457 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { pipeWeight } from '../lib/calculator';
+import { VERIFICATION_LABELS } from '../lib/dimensions';
+import b3610 from '../data/b36.10-2022.json';
+import b3619 from '../data/b36.19-2022.json';
+import type { DimensionDataset } from '../lib/dimensions';
+
+const datasets: DimensionDataset[] = [b3610 as DimensionDataset, b3619 as DimensionDataset];
+const datasetsJson = JSON.stringify(datasets);
+
+// Worked example (build-time computed, full precision from the same core)
+const ex = pipeWeight({ odMm: 114.3, wallMm: 6, lengthM: 6, pieces: 10, densityKgM3: 7850 });
+
+const d10 = b3610 as DimensionDataset;
+const d19 = b3619 as DimensionDataset;
+const npsOrder = ['1/2','3/4','1','1-1/4','1-1/2','2','2-1/2','3','3-1/2','4','5','6','8','10','12'];
+const wallOf = (ds: DimensionDataset, nps: string, s: string) =>
+  ds.records.find((r) => r.nps === nps && r.scheduleDesignation === s)?.wallMm?.toFixed(2) ?? '—';
+const odOf = (ds: DimensionDataset, nps: string) =>
+  ds.records.find((r) => r.nps === nps)?.odMm?.toFixed(2) ?? '—';
+
+const faqs = [
+  {
+    q: 'Is this the actual weight of my pipe?',
+    a: 'No. This is the theoretical (calculated) weight from geometry and an assumed density. Actual pipe weight varies with manufacturing tolerance, wall-thickness tolerance, coatings, and end finish. Use it for estimating, quoting, and logistics planning — not as a substitute for weighing.',
+  },
+  {
+    q: 'What is the difference between Schedule 40 and 40S?',
+    a: 'They belong to different standards: Schedule 40 is ASME B36.10 (wrought steel pipe), 40S is ASME B36.19 (stainless steel pipe). Their wall thicknesses happen to coincide at small sizes but diverge at larger ones — e.g. NPS 12: Sch 40 is 10.31 mm wall, 40S is 9.52 mm. This calculator looks each designation up exactly and never substitutes one for the other.',
+  },
+  {
+    q: 'Why is density shown separately instead of built in?',
+    a: 'Because weight depends on material, not just dimensions. The default 7850 kg/m³ is a typical estimate for carbon steel. Stainless grades differ, so there is no single hidden "stainless" density here — set a custom value when you know your material.',
+  },
+  {
+    q: 'Do you use the weight tables printed in the standards?',
+    a: 'No. Tabulated masses are looked up; this calculator computes weight geometrically from outside diameter, wall thickness, length, and density: W = π/4 × (OD² − ID²) × L × ρ.',
+  },
+  {
+    q: 'What does "cross-checked" mean on a dimension record?',
+    a: 'Each record carries a verification level: checked against the official source text, cross-checked against a manufacturer source, cross-checked between independent edition-named sources, or cross-checked via edition change records. The full method is documented per record — see Methodology.',
+  },
+  {
+    q: 'What is NPS?',
+    a: 'Nominal Pipe Size. It is a designation, not a measured dimension: for example, NPS 4 pipe has an outside diameter of 114.3 mm, not 4 inches (≈101.6 mm) and not 100 mm inside. Always confirm OD and wall thickness rather than inferring them from the NPS number.',
+  },
+];
+
+---
+
+<Layout
+  title="Steel Pipe Weight Calculator — kg/m, lb/ft"
+  description="Calculate steel pipe theoretical weight in kg/m, lb/ft and total batch weight from actual dimensions or NPS and Schedule (ASME B36.10 / B36.19). Density assumption always shown."
+  path="/steel-pipe-weight-calculator/"
+>
+<style>
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; } }
+  .calc-card label { display: block; font-size: .85rem; color: var(--muted); margin: 10px 0 4px; }
+  .calc-card input, .calc-card select { width: 100%; padding: 9px 10px; font-size: 1rem; border: 1px solid var(--line); border-radius: 6px; }
+  .calc-card input:disabled { background: #f3f3f3; color: #999; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .input-unit { display: flex; gap: 6px; }
+  .input-unit input { flex: 1; min-width: 0; }
+  .input-unit select { width: auto; flex: 0 0 4.2em; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 8px; }
+  .tabs button { flex: 1; padding: 10px; border: 1px solid var(--line); background: #f7f7f7; border-radius: 6px; cursor: pointer; font-size: .95rem; }
+  .tabs button[aria-selected="true"] { background: var(--fg); color: #fff; border-color: var(--fg); }
+  .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .result-main { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 8px 0 16px; }
+  @media (max-width: 480px) { .result-main { grid-template-columns: 1fr; } }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  .stat .v { font-size: 1.45rem; font-weight: 650; }
+  .stat .u { font-size: .8rem; color: var(--muted); }
+  table.spec { width: 100%; border-collapse: collapse; font-size: .9rem; margin-top: 8px; }
+  table.spec td { padding: 6px 4px; border-bottom: 1px solid var(--line); }
+  table.spec td:first-child { color: var(--muted); width: 55%; }
+  .density-note { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 10px 12px; font-size: .88rem; margin-top: 12px; }
+  .hint { font-size: .8rem; color: var(--muted); margin-top: 4px; }
+  .example-tag { display: inline-block; font-size: .75rem; background: #eef2ff; color: #3730a3; border-radius: 4px; padding: 2px 8px; margin-bottom: 8px; }
+  .unavail { color: var(--warn); font-size: .9rem; }
+  .err { color: #b91c1c; font-size: .9rem; margin-top: 8px; }
+  .prov { font-size: .8rem; color: var(--muted); margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  ol.steps li { margin-bottom: 6px; }
+</style>
+
+<h1>Steel Pipe Weight Calculator</h1>
+<p class="lede">Calculate pipe weight in kg/m, lb/ft and total weight using actual dimensions or NPS and Schedule.</p>
+
+<div class="cols">
+  <div class="card calc-card">
+    <span class="example-tag" id="exampleTag">Example values</span>
+    <div class="tabs" role="tablist" aria-label="Input mode">
+      <button id="tabActual" role="tab" aria-selected="true" aria-controls="paneActual" tabindex="0">Actual dimensions</button>
+      <button id="tabSchedule" role="tab" aria-selected="false" aria-controls="paneSchedule" tabindex="-1">NPS / Schedule</button>
+    </div>
+
+    <div id="paneActual" role="tabpanel" aria-labelledby="tabActual" tabindex="0">
+      <div class="row">
+        <div>
+          <label for="od">Outside diameter</label>
+          <div class="input-unit">
+            <input id="od" type="number" step="any" min="0" value="114.3" />
+            <select id="odUnit" aria-label="OD unit"><option value="mm">mm</option><option value="in">in</option></select>
+          </div>
+        </div>
+        <div>
+          <label for="wall">Wall thickness</label>
+          <div class="input-unit">
+            <input id="wall" type="number" step="any" min="0" value="6" />
+            <select id="wallUnit" aria-label="Wall unit"><option value="mm">mm</option><option value="in">in</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="paneSchedule" role="tabpanel" aria-labelledby="tabSchedule" tabindex="0" hidden>
+      <label for="std">Dimensional standard</label>
+      <select id="std">
+        <option value="ASME B36.10">ASME B36.10-2022 — wrought steel pipe dimensions</option>
+        <option value="ASME B36.19">ASME B36.19-2022 — stainless steel pipe dimensions</option>
+      </select>
+      <p class="hint">Dimensional standard does not set material density — set density below.</p>
+      <div class="row">
+        <div><label for="nps">NPS</label><select id="nps"></select></div>
+        <div><label for="sched">Schedule</label><select id="sched"></select></div>
+      </div>
+      <div id="schedInfo" class="unavail" style="margin-top:8px"></div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="len">Length per piece</label>
+        <div class="input-unit">
+          <input id="len" type="number" step="any" min="0" value="6" />
+          <select id="lenUnit" aria-label="Length unit"><option value="m">m</option><option value="ft">ft</option></select>
+        </div>
+      </div>
+      <div><label for="pcs">Pieces</label><input id="pcs" type="number" step="1" min="1" value="10" /></div>
+    </div>
+
+    <label for="densityPreset">Density (kg/m³)</label>
+    <div class="row" style="grid-template-columns: 1fr 1fr;">
+      <select id="densityPreset">
+        <option value="carbon-steel">Carbon steel — 7850 (typical estimate)</option>
+        <option value="custom">Custom…</option>
+      </select>
+      <input id="densityCustom" type="number" step="any" min="0" value="7850" aria-label="Custom density" disabled />
+    </div>
+
+    <div id="err" class="err" role="alert" hidden></div>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:1.05rem;margin:0 0 12px;">Result <span style="font-weight:400;font-size:.8rem;color:var(--muted)">theoretical weight</span></h2>
+    <div class="result-main">
+      <div class="stat"><div class="v" id="rKgm">–</div><div class="u">kg/m</div></div>
+      <div class="stat"><div class="v" id="rLbft">–</div><div class="u">lb/ft</div></div>
+      <div class="stat"><div class="v" id="rTotal">–</div><div class="u">total kg</div></div>
+    </div>
+    <table class="spec">
+      <tr><td>Inside diameter</td><td id="rId">–</td></tr>
+      <tr><td>Metal cross-section</td><td id="rArea">–</td></tr>
+      <tr><td>Per piece</td><td id="rPiece">–</td></tr>
+      <tr><td>Total tonnage</td><td id="rTonne">–</td></tr>
+    </table>
+    <div class="density-note" id="densityNote">–</div>
+    <div class="prov" id="prov">–</div>
+  </div>
+</div>
+
+<h2>How to use</h2>
+<ol class="steps">
+  <li>Choose <strong>Actual dimensions</strong> if you measured the pipe (caliper OD, wall from spec or UT gauge), or <strong>NPS / Schedule</strong> to look up nominal dimensions from ASME B36.10-2022 / B36.19-2022.</li>
+  <li>Enter length per piece and the number of pieces. Inputs accept metric or imperial units — switch the unit selector and the value converts in place.</li>
+  <li>Check the <strong>density assumption</strong> next to the result. Carbon steel defaults to 7850 kg/m³ (typical estimate); set a custom value for other materials.</li>
+  <li>Read kg/m, lb/ft, per-piece and batch total. Totals are computed from full precision, never from rounded display values.</li>
+</ol>
+
+<h2>Worked example</h2>
+<p>Pipe: OD 114.3 mm, wall 6 mm, length 6 m, 10 pieces, density 7850 kg/m³ (carbon steel, typical estimate).</p>
+<ul>
+  <li>Inside diameter: 114.3 − 2 × 6 = <strong>102.3 mm</strong></li>
+  <li>Metal cross-section: π/4 × (114.3² − 102.3²) = <strong>{ex.areaMm2.toFixed(2)} mm²</strong></li>
+  <li>Weight: <strong>{ex.kgPerM.toFixed(2)} kg/m</strong> ({ex.lbPerFt.toFixed(2)} lb/ft)</li>
+  <li>Per piece (6 m): <strong>{ex.perPieceKg.toFixed(2)} kg</strong> — batch total (10 pcs): <strong>{ex.totalKg.toFixed(2)} kg</strong></li>
+</ul>
+
+<h2>How it works</h2>
+<p>Theoretical weight is computed geometrically: <code>W = π/4 × (OD² − ID²) × L × ρ</code>, where <code>ID = OD − 2t</code>. Inputs may be metric or imperial and are normalized to SI before calculation. The full-precision result is calculated first; rounding is applied only for display — batch totals are never derived from rounded per-metre values.</p>
+
+<h2>Units</h2>
+<p>Diameter and wall thickness: millimetres (mm) or inches (in). Length: metres (m) or feet (ft). Results are always shown in both kg/m and lb/ft. Density is entered in kg/m³.</p>
+
+<h2>What NPS means</h2>
+<p>NPS (Nominal Pipe Size) is a designation, not a measurement. NPS 4 pipe has an outside diameter of 114.3 mm — not 4 inches (≈101.6 mm) and not 100 mm inside. Always confirm OD and wall thickness from a dimension table or measurement rather than inferring them from the NPS number.</p>
+
+<h2>Verified dimension tables</h2>
+<p>Wall thickness (mm) by NPS and Schedule. OD (mm) is constant per NPS row. Every cell carries documented provenance — see <a href="/methodology/">Methodology</a>.</p>
+
+<h3>ASME B36.10-2022 — Sch 40 / 80</h3>
+<table class="data">
+  <tr><th>NPS</th><th>OD (mm)</th><th>Sch 40 wall</th><th>Sch 80 wall</th></tr>
+  {npsOrder.map((n) => (
+    <tr><td>{n}</td><td>{odOf(d10, n)}</td><td>{wallOf(d10, n, '40')}</td><td>{wallOf(d10, n, '80')}</td></tr>
+  ))}
+</table>
+
+<h3>ASME B36.19-2022 — 5S / 10S / 40S / 80S</h3>
+<table class="data">
+  <tr><th>NPS</th><th>OD (mm)</th><th>5S</th><th>10S</th><th>40S</th><th>80S</th></tr>
+  {npsOrder.map((n) => (
+    <tr><td>{n}</td><td>{odOf(d19, n)}</td><td>{wallOf(d19, n, '5S')}</td><td>{wallOf(d19, n, '10S')}</td><td>{wallOf(d19, n, '40S')}</td><td>{wallOf(d19, n, '80S')}</td></tr>
+  ))}
+</table>
+<p class="hint">Note: 40 ≠ 40S and 80 ≠ 80S — different standards. Values coincide at small sizes but diverge at NPS 10–12 (e.g. NPS 12 Sch 80: 17.48 mm vs 80S: 12.70 mm).</p>
+
+<h2>Assumptions &amp; sources</h2>
+<p>Density: carbon steel 7850 kg/m³ (typical estimate, user-overridable). Dimensional data: ASME B36.10-2022 and ASME B36.19-2022 schedule tables, each record cross-checked against independent sources with the verification level and method documented per record. See <a href="/methodology/">Methodology</a> for full provenance.</p>
+
+<h2>FAQ</h2>
+{faqs.map((f) => (
+  <details class="faq">
+    <summary>{f.q}</summary>
+    <p>{f.a}</p>
+  </details>
+))}
+
+<script type="application/json" id="spwc-data" set:html={datasetsJson} />
+
+<script>
+  import { toMm, toM, fromMm, fromM, formatInputValue } from '../lib/units';
+  import { VERIFICATION_LABELS } from '../lib/dimensions';
+  import { initTabs } from '../lib/tabs';
+  import { trackEvent } from '../lib/analytics';
+
+  const datasets = JSON.parse(document.getElementById('spwc-data').textContent);
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    tabActual: $('tabActual'), tabSchedule: $('tabSchedule'),
+    paneActual: $('paneActual'), paneSchedule: $('paneSchedule'),
+    od: $('od'), odUnit: $('odUnit'), wall: $('wall'), wallUnit: $('wallUnit'),
+    std: $('std'), nps: $('nps'), sched: $('sched'),
+    schedInfo: $('schedInfo'), len: $('len'), lenUnit: $('lenUnit'), pcs: $('pcs'),
+    densityPreset: $('densityPreset'), densityCustom: $('densityCustom'),
+    err: $('err'), exampleTag: $('exampleTag'),
+    rKgm: $('rKgm'), rLbft: $('rLbft'), rTotal: $('rTotal'),
+    rId: $('rId'), rArea: $('rArea'), rPiece: $('rPiece'), rTonne: $('rTonne'),
+    densityNote: $('densityNote'), prov: $('prov'),
+  };
+  let mode = 'actual';
+  let userEdited = false;
+  let lastCalcTotal = null; // dedupe calculator_use: fire only on a new result
+  let schedEventsArmed = false; // skip schedule_unavailable during initial render
+
+  const KG_M_TO_LB_FT = 0.671968975; // keep in sync with src/lib/calculator.ts
+
+  // P0-3: schedule choices are defined at standard level, not derived from
+  // whatever records happen to exist — missing combos stay visible.
+  const STANDARD_SCHEDULES = {
+    'ASME B36.10': ['40', '80'],
+    'ASME B36.19': ['5S', '10S', '40S', '80S'],
+  };
+
+  function markEdited() {
+    if (!userEdited) { userEdited = true; els.exampleTag.style.display = 'none'; }
+  }
+  document.querySelectorAll('input,select').forEach((el) =>
+    el.addEventListener('input', () => { markEdited(); recalc(); }));
+
+  els.tabActual.addEventListener('click', () => setMode('actual'));
+  els.tabSchedule.addEventListener('click', () => setMode('schedule'));
+
+  // P2-1: APG tabs — roving tabindex + Arrow/Home/End keyboard activation.
+  // initTabs owns tab attributes + keyboard; setMode owns panel switching.
+  const tabsApi = initTabs([els.tabActual, els.tabSchedule], (i) =>
+    setMode(i === 0 ? 'actual' : 'schedule'));
+
+  function setMode(m) {
+    mode = m;
+    tabsApi.sync(m === 'actual' ? 0 : 1);
+    els.paneActual.hidden = m !== 'actual';
+    els.paneSchedule.hidden = m !== 'schedule';
+    markEdited(); recalc();
+  }
+
+  // P0-1: unit switching preserves the physical value (converts, not reinterprets).
+  function bindUnit(inputEl, unitSel, toSI, fromSI) {
+    unitSel.dataset.prev = unitSel.value;
+    unitSel.addEventListener('change', () => {
+      const oldUnit = unitSel.dataset.prev, newUnit = unitSel.value;
+      const v = parseFloat(inputEl.value);
+      if (Number.isFinite(v) && oldUnit !== newUnit) {
+        const si = toSI(v, oldUnit);
+        inputEl.value = formatInputValue(fromSI(si, newUnit), newUnit);
+      }
+      unitSel.dataset.prev = newUnit;
+      markEdited(); recalc();
+    });
+  }
+  bindUnit(els.od, els.odUnit, toMm, fromMm);
+  bindUnit(els.wall, els.wallUnit, toMm, fromMm);
+  bindUnit(els.len, els.lenUnit, toM, fromM);
+
+  // P1-2: custom density field is only editable when the custom preset is chosen.
+  function syncDensityCustom() {
+    const isCustom = els.densityPreset.value === 'custom';
+    els.densityCustom.disabled = !isCustom;
+  }
+  els.densityPreset.addEventListener('change', () => {
+    syncDensityCustom(); markEdited(); recalc();
+    if (els.densityPreset.value === 'custom') {
+      const v = parseFloat(els.densityCustom.value);
+      trackEvent('density_override', Number.isFinite(v) ? { density: v } : {});
+    }
+  });
+  // Fire on commit (change), not per keystroke.
+  els.densityCustom.addEventListener('change', () => {
+    const v = parseFloat(els.densityCustom.value);
+    if (Number.isFinite(v) && v > 0) trackEvent('density_override', { density: v });
+  });
+  syncDensityCustom();
+
+  function currentDataset() {
+    return datasets.find((d) => d.standardId === els.std.value);
+  }
+
+  function refreshNps() {
+    const ds = currentDataset();
+    const npsList = [...new Set(ds.records.map((r) => r.nps))];
+    els.nps.innerHTML = npsList.map((n) => `<option>${n}</option>`).join('');
+    refreshSched();
+  }
+  function refreshSched() {
+    const ds = currentDataset();
+    const nps = els.nps.value;
+    const unavailable = [];
+    els.sched.innerHTML = STANDARD_SCHEDULES[els.std.value].map((s) => {
+      // EXACT match — '40' never resolves '40S' and vice versa
+      const rec = ds.records.find((r) => r.nps === nps && r.scheduleDesignation === s);
+      const ok = rec && rec.availability === 'available';
+      if (!ok) unavailable.push(s);
+      return ok
+        ? `<option value="${s}">${s}</option>`
+        : `<option value="${s}" disabled>${s} — unavailable</option>`;
+    }).join('');
+    if (els.sched.selectedOptions.length === 0 || els.sched.selectedOptions[0].disabled) {
+      els.sched.selectedIndex = [...els.sched.options].findIndex((o) => !o.disabled);
+    }
+    // Analytics: user is looking at a visibly-unavailable combination.
+    if (schedEventsArmed && unavailable.length > 0) {
+      trackEvent('schedule_unavailable', { standard: els.std.value, nps, unavailable });
+    }
+    recalc();
+  }
+  els.std.addEventListener('change', refreshNps);
+  els.nps.addEventListener('change', refreshSched);
+  // schedule_select (+ s_schedule_select for the stainless B36.19 track).
+  els.sched.addEventListener('change', () => {
+    const props = { standard: els.std.value, nps: els.nps.value, schedule: els.sched.value };
+    trackEvent('schedule_select', props);
+    if (els.std.value === 'ASME B36.19') trackEvent('s_schedule_select', props);
+  });
+
+  function getDims() {
+    if (mode === 'actual') {
+      const odMm = toMm(parseFloat(els.od.value), els.odUnit.value);
+      const wallMm = toMm(parseFloat(els.wall.value), els.wallUnit.value);
+      return { odMm, wallMm, prov: null };
+    }
+    const ds = currentDataset();
+    const rec = ds.records.find((r) => r.nps === els.nps.value && r.scheduleDesignation === els.sched.value);
+    if (!rec) return { error: `No data for NPS ${els.nps.value} / ${els.sched.value} — visibly unavailable, not substituted.` };
+    if (rec.availability !== 'available') return { error: `NPS ${rec.nps} / ${rec.scheduleDesignation} is marked unavailable in ${rec.standardId}-${rec.edition}.` };
+    return { odMm: rec.odMm, wallMm: rec.wallMm, prov: rec };
+  }
+
+  function getDensity() {
+    if (els.densityPreset.value === 'custom') {
+      const v = parseFloat(els.densityCustom.value);
+      return { densityKgM3: v, label: 'user-specified' };
+    }
+    return { densityKgM3: 7850, label: 'typical estimate' };
+  }
+
+  function clearOutputs() {
+    for (const k of ['rKgm', 'rLbft', 'rTotal', 'rId', 'rArea', 'rPiece', 'rTonne']) els[k].textContent = '–';
+    // P0-5: never leave stale density/provenance visible next to an error.
+    els.densityNote.textContent = '–';
+    els.prov.textContent = '–';
+    els.schedInfo.textContent = '';
+  }
+
+  function recalc() {
+    els.err.hidden = true;
+    try {
+      const dims = getDims();
+      if (dims.error) throw new Error(dims.error);
+      const { odMm, wallMm } = dims;
+      const { densityKgM3, label } = getDensity();
+      for (const [n, v] of Object.entries({ odMm, wallMm, densityKgM3 })) {
+        if (!Number.isFinite(v) || v <= 0) throw new Error(`${n} must be a positive number.`);
+      }
+      if (odMm <= 2 * wallMm) throw new Error('Wall thickness must be less than half the OD.');
+      const lengthM = toM(parseFloat(els.len.value), els.lenUnit.value);
+      if (!Number.isFinite(lengthM) || lengthM <= 0) throw new Error('Length must be positive.');
+      // P0-2: Number(), not parseInt() — "1.5" must fail, "1e2" means 100, not 1.
+      const pcsRaw = els.pcs.value.trim();
+      const pieces = Number(pcsRaw);
+      if (pcsRaw === '' || !Number.isFinite(pieces) || !Number.isInteger(pieces) || pieces <= 0) {
+        throw new Error('Pieces must be a positive integer.');
+      }
+
+      const idMm = odMm - 2 * wallMm;
+      const areaMm2 = (Math.PI / 4) * (odMm * odMm - idMm * idMm);
+      const kgPerM = areaMm2 * 1e-6 * densityKgM3;
+      const lbPerFt = kgPerM * KG_M_TO_LB_FT;
+      const perPieceKg = kgPerM * lengthM;
+      const totalKg = perPieceKg * pieces;
+      for (const v of [kgPerM, lbPerFt, perPieceKg, totalKg, idMm, areaMm2]) {
+        if (!Number.isFinite(v)) throw new Error('Result overflowed — reduce the input values.');
+      }
+
+      els.rKgm.textContent = kgPerM.toFixed(2);
+      els.rLbft.textContent = lbPerFt.toFixed(2);
+      els.rTotal.textContent = totalKg.toFixed(2);
+      els.rId.textContent = idMm.toFixed(2) + ' mm';
+      els.rArea.textContent = areaMm2.toFixed(2) + ' mm²';
+      els.rPiece.textContent = perPieceKg.toFixed(2) + ' kg';
+      els.rTonne.textContent = (totalKg / 1000).toFixed(3) + ' t';
+      els.densityNote.innerHTML = `<strong>Density used:</strong> ${densityKgM3} kg/m³ <em>(${label})</em> — theoretical weight; actual weight varies with manufacturing tolerance and coating.`;
+      els.schedInfo.textContent = '';
+      // P0-4: public copy says "cross-checked", never bare "verified".
+      els.prov.textContent = dims.prov
+        ? `Dimensions: ${dims.prov.standardId}-${dims.prov.edition}, NPS ${dims.prov.nps} / ${dims.prov.scheduleDesignation}. Source: ${dims.prov.sourceDocument}. ${VERIFICATION_LABELS[dims.prov.verificationStatus]} (${dims.prov.verifiedAt}).`
+        : '';
+      // Analytics: a successful calculation produced a new result.
+      if (totalKg !== lastCalcTotal) {
+        lastCalcTotal = totalKg;
+        trackEvent(
+          'calculator_use',
+          mode === 'schedule' ? { mode, standard: els.std.value } : { mode },
+        );
+      }
+    } catch (e) {
+      els.err.textContent = e.message;
+      els.err.hidden = false;
+      clearOutputs();
+    }
+  }
+
+  refreshNps();
+  recalc();
+  schedEventsArmed = true;
+</script>
+</Layout>

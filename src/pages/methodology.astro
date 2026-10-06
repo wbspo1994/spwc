@@ -1,0 +1,56 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Methodology — how pipe weights are calculated"
+  description="The formula, density assumptions, standards and verification methods behind the PipeMetric steel pipe weight calculator. What the numbers are and are not."
+  path="/methodology/"
+>
+<h1>Methodology</h1>
+<p class="lede">What this calculator computes, what it assumes, and how every dimension record was checked.</p>
+
+<h2>The formula</h2>
+<p>Theoretical weight is computed geometrically from the pipe's cross-section:</p>
+<p><code>W = π/4 × (OD² − ID²) × L × ρ</code>, where <code>ID = OD − 2t</code>.</p>
+<ul>
+  <li><strong>OD</strong> — outside diameter; <strong>t</strong> — wall thickness; <strong>L</strong> — length; <strong>ρ</strong> — density.</li>
+  <li>Inputs may be metric or imperial and are normalized to SI before calculation.</li>
+  <li>Computation uses full precision throughout; rounding is applied only for display. Batch totals are never derived from rounded per-metre values.</li>
+  <li>We do <strong>not</strong> look up tabulated masses from the standards. Tabulated values are reference data; this tool calculates.</li>
+</ul>
+
+<h2>Density assumptions</h2>
+<ul>
+  <li>Default: carbon steel <strong>7850 kg/m³</strong>, labeled as a <em>typical estimate</em> — always visible next to the result, one-tap override.</li>
+  <li>There is no single hidden "stainless steel" density here. Stainless grades (304, 316, duplex…) differ, so only a custom density entry is offered for non-carbon steels — unless a preset ships with recorded source provenance.</li>
+  <li>Dimensional-standard data and density data are stored and treated separately. Selecting ASME B36.19 dimensions never silently changes your density.</li>
+</ul>
+
+<h2>Standards and editions</h2>
+<ul>
+  <li><strong>ASME B36.10-2022</strong> — Welded and Seamless Wrought Steel Pipe. Schedules 40 and 80, NPS 1/2–12.</li>
+  <li><strong>ASME B36.19-2022</strong> — Welded and Seamless Austenitic Stainless Steel Pipe. Schedules 5S, 10S, 40S, 80S, NPS 1/2–12.</li>
+  <li><code>40</code> ≠ <code>40S</code> and <code>80</code> ≠ <code>80S</code>. They are different standards; wall thicknesses coincide at small sizes but diverge at NPS 10–12 (e.g. NPS 12 Sch 80: 17.48 mm vs 80S: 12.70 mm). The calculator looks each designation up exactly and never substitutes.</li>
+</ul>
+
+<h2>How dimension records were verified</h2>
+<p>No model-memory values are used in production. Every record carries: standard, edition, source document, source record reference, NPS, schedule, OD, wall, availability, verifier, verification date, verification method, and a verification level.</p>
+<p>Verification levels, strongest first:</p>
+<ul>
+  <li><strong>official_source_verified</strong> — checked row-by-row against the authoritative source text.</li>
+  <li><strong>cross_checked_manufacturer</strong> — a secondary dimension chart agrees with an independent manufacturer source.</li>
+  <li><strong>cross_checked_secondary</strong> — two independent edition-named secondary sources agree.</li>
+  <li><strong>cross_checked_indirect</strong> — a secondary chart plus the edition's own change-record reasoning.</li>
+  <li><strong>pending / failed</strong> — never go live. Ever.</li>
+</ul>
+<p>Current data: B36.19-2022 records are cross-checked between two independent tables that both name the 2022 edition (60/60 walls and 15/15 ODs agree). B36.10-2022 records come from a B36.10M chart cross-checked against two Wheatland Tube manufacturer submittals (11/11 and 5/5 on overlapping cells); the 2022 edition's own Foreword/Summary of Changes confirms no Sch 40/80 OD/wall changes in NPS 1/2–12, which is why 2018-edition values remain valid for these cells. Millimetre OD values follow the source tables; the 2022 SI rounding revision may shift displayed mm ODs by ≤0.05 mm — inch ODs and all wall values are unaffected.</p>
+<p>We state verification levels honestly. Nothing here implies row-by-row verification against the paid ASME text unless a row was actually checked against it.</p>
+
+<h2>Limitations</h2>
+<ul>
+  <li>Results are <strong>theoretical</strong>: real pipe varies with manufacturing tolerance, wall tolerance, coatings, and end finish.</li>
+  <li>This is not engineering advice: do not use it for pressure design, lifting, supports, or structural calculations. See <a href="/terms/">Terms</a>.</li>
+  <li>Only the listed NPS × Schedule combinations are available. Anything else is shown as unavailable, never guessed.</li>
+</ul>
+</Layout>

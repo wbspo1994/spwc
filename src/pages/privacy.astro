@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Privacy"
+  description="How PipeMetric handles your data: the calculator runs locally in your browser; inquiry data is stored privately with a 12-month retention."
+  path="/privacy/"
+>
+<h1>Privacy</h1>
+<p class="lede">Two kinds of data, two very different treatments.</p>
+
+<h2>Calculator use — nothing leaves your browser</h2>
+<p>The weight calculator runs 100% client-side. Your dimensions, quantities, and density inputs are processed on your own device and are never sent to any server, logged, or stored by us. Closing the tab erases everything.</p>
+<p>We use privacy-respecting, cookieless analytics to understand aggregate usage (page views, referrers, device types). It sets no cookies and collects no personal identifiers.</p>
+
+<h2>Inquiry data — private, limited, time-boxed</h2>
+<p>If you submit a sourcing inquiry (via the inquiry form, when available):</p>
+<ul>
+  <li><strong>What is stored:</strong> your contact details and the specification you submitted, in a private Cloudflare D1 database — the sole record of inquiries.</li>
+  <li><strong>Who can access it:</strong> only the site owner and authorized administrators. It is never public.</li>
+  <li><strong>How long:</strong> 12 months from submission, then deleted.</li>
+  <li><strong>What it is never used for:</strong> your inquiry is never published, never turned into SEO content, and never shared beyond what is strictly necessary to forward your RFQ to a potential supplier.</li>
+  <li><strong>Supplier forwarding:</strong> when we forward your RFQ to a supplier, only the information needed for a quotation is sent — nothing more.</li>
+</ul>
+
+<h2>Your rights</h2>
+<p>To access, correct, or delete your inquiry data before the 12-month retention expires, contact the site owner via the inquiry channel. We will confirm deletion.</p>
+</Layout>
