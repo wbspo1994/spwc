@@ -14,6 +14,7 @@ npm ci --prefix worker --cache /workspace/.npm
 npm test -- --maxWorkers=2 --minWorkers=1
 npm run typecheck --prefix worker
 worker/node_modules/.bin/tsc -p worker/tsconfig.frontend.json
+npm run test:build-gates --prefix worker
 XDG_CONFIG_HOME=/workspace/.config WRANGLER_SEND_METRICS=false npm run migrate:local --prefix worker
 XDG_CONFIG_HOME=/workspace/.config WRANGLER_SEND_METRICS=false npm run test:e2e --prefix worker
 ASTRO_TELEMETRY_DISABLED=1 PUBLIC_SITE_URL=https://steelpipe.wbspo.ccwu.cc PUBLIC_NOINDEX=true npm run build
@@ -86,3 +87,7 @@ R2 objects under `daily/` expire after seven days through cron cleanup. Before l
 `wrangler.review.jsonc.example` is an intentionally incomplete review template, with no resource IDs, routes or secrets. It cannot be used as-is. After review and explicit approval, configure separate staging resources first, use exact intended hostname/action, secure Worker secrets, verify actual owner inbox receipt, exercise all 14 matrix items in staging, configure private backups/lifecycle and recovery retention, then obtain separate approval for public enable. No production command was executed here.
 
 See `../docs/CTA_IMPLEMENTATION_REPORT.md` for the evidence and outstanding gates.
+
+## Issue #1 cross-review corrections
+
+The CTA script is inside the configured block and uses a compile-time dynamic-import gate: moving a processed Astro script alone does not prevent script hoisting. `test:build-gates` checks actual `dist/` output for disabled, unset, incomplete and enabled configurations; disabled production artifacts contain neither a sourcing bundle nor a CTA loader. Privacy explicitly separates D1 retention, backup grace and mailbox/provider policies. Staging uses strategy A (exact local frontend Origin against remote isolated staging resources). See `ops/STAGING.md` for independent R2 lifecycle commands, read-back criteria, credential prerequisites and the live-provider matrix. The lifecycle rule is pending real account access; it has not been configured by writing this document.

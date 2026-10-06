@@ -6,7 +6,8 @@
     "dev": "wrangler dev --config wrangler.local.jsonc --test-scheduled",
     "migrate:local": "wrangler d1 migrations apply spwc-inquiries-local --local --config wrangler.local.jsonc",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:build-gates": "node scripts/check-cta-builds.mjs"
   },
   "devDependencies": {
     "wrangler": "4.76.0",

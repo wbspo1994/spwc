@@ -34,6 +34,12 @@ const configured = enabled && api && sitekey;
   <p>If you cannot submit, contact <a href="mailto:wbspo1994@gmail.com">wbspo1994@gmail.com</a>.</p>
  </form>
  <p id="sourcing-success" tabindex="-1" role="status" aria-live="polite" hidden></p>
+ <script>
+  if (import.meta.env.PUBLIC_SOURCING_CTA_ENABLED === 'true' && import.meta.env.PUBLIC_INQUIRY_API_URL && import.meta.env.PUBLIC_TURNSTILE_SITE_KEY) {
+   const {initSourcingForm} = await import('../lib/sourcing-form');
+   initSourcingForm();
+  }
+ </script>
 </section>}
 <style>
  .sourcing-cta {margin-top:24px;}
@@ -44,7 +50,3 @@ const configured = enabled && api && sitekey;
  fieldset {margin:12px 0;border:1px solid var(--line);}
  #sourcing-error {color:#b91c1c;}
 </style>
-<script>
- import {initSourcingForm} from '../lib/sourcing-form';
- initSourcingForm();
-</script>

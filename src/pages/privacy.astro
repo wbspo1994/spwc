@@ -17,9 +17,11 @@ import Layout from '../layouts/Layout.astro';
 <h2>Inquiry data — private, limited, time-boxed</h2>
 <p>If you submit a sourcing inquiry (via the inquiry form, when available):</p>
 <ul>
-  <li><strong>What is stored:</strong> your contact details and the specification you submitted, in a private Cloudflare D1 database — the sole record of inquiries.</li>
+  <li><strong>What is stored:</strong> your contact details and the specification you submitted, in a private Cloudflare D1 database as the primary inquiry record. Owner notification emails also contain inquiry details.</li>
   <li><strong>Who can access it:</strong> only the site owner and authorized administrators. It is never public.</li>
-  <li><strong>How long:</strong> 12 months from submission, then deleted from the inquiry database. Private daily operational backups expire after 7 days; a deleted inquiry may remain in those copies for up to 7 additional days, and restoration excludes expired inquiries.</li>
+  <li><strong>Primary inquiry database (D1):</strong> retained for 12 months from submission, then deleted.</li>
+  <li><strong>Private operational backups:</strong> a deleted inquiry may remain in these copies for up to 7 additional days. Backups expire after 7 days, and restoration excludes expired inquiries.</li>
+  <li><strong>Owner notification email copies and mail-provider operational records:</strong> retained according to the applicable mailbox and provider policies; the D1 deletion schedule does not automatically delete these separate copies and records.</li>
   <li><strong>What it is never used for:</strong> your inquiry is never published, never turned into SEO content, and never shared beyond what is strictly necessary to forward your RFQ to a potential supplier.</li>
   <li><strong>Supplier forwarding:</strong> when we forward your RFQ to a supplier, only the information needed for a quotation is sent — nothing more.</li>
 </ul>
