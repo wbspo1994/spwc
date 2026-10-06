@@ -1,19 +1,19 @@
 # Issue #1: staging operations and live-provider gates
 
-## Chosen origin strategy: A
+## Current origin strategy: B (owner-authorized human frontend)
 
-Run the Astro frontend locally at the exact origin `http://127.0.0.1:4321`, against an isolated remote staging Worker/D1/R2 deployment. Do not introduce a separate staging frontend hostname. The staging Worker configuration must use:
+The owner authorized a temporary hosted frontend after the local cloud browser could not complete a genuine challenge. This supersedes strategy A for the human test. Use the independent static Worker frontend at the exact origin `https://spwc-cta-human-staging.wbspo1994.workers.dev`, against isolated staging Worker/D1/R2. See [HUMAN_STAGING.md](HUMAN_STAGING.md) for deployment evidence, widget authorization and the stop-for-owner test instructions. The staging Worker configuration now uses:
 
 ```json
 {
-  "ALLOWED_ORIGIN": "http://127.0.0.1:4321",
-  "TURNSTILE_HOSTNAME": "127.0.0.1",
+  "ALLOWED_ORIGIN": "https://spwc-cta-human-staging.wbspo1994.workers.dev",
+  "TURNSTILE_HOSTNAME": "spwc-cta-human-staging.wbspo1994.workers.dev",
   "TURNSTILE_ACTION": "sourcing_inquiry",
   "BACKUPS_ENABLED": "true"
 }
 ```
 
-The intended production configuration keeps the exact production Origin and production Turnstile hostname. Production does not gain a wildcard or arbitrary-origin override. `wrangler.review.jsonc.example` now records this staging choice. Local provider-simulator tests are separate from the live staging matrix below.
+The intended production configuration keeps the exact production Origin and production Turnstile hostname. Production does not gain a wildcard or arbitrary-origin override. `wrangler.review.jsonc.example` records this exact hosted staging choice; the previous exact loopback path remains supported only when explicitly selected instead. Local provider-simulator tests are separate from the live staging matrix below.
 
 ## Current external prerequisites
 
@@ -28,8 +28,8 @@ Cloud environment settings need account access scoped to the intended staging ac
 1. Verify account access with Wrangler and inspect existing resources before creating any. Use isolated names such as `spwc-inquiries-staging` and `spwc-inquiries-backups-staging`. Never select the production D1 database, R2 bucket, Worker or Pages project.
 2. Create staging D1/R2 resources if they are absent. Save their identifiers in ignored `worker/wrangler.review.jsonc`; do not commit account IDs or secrets. Apply migrations only to staging D1.
 3. Keep the R2 bucket private: no public bucket URL or public custom domain. Add the independent lifecycle rule below, and read it back **before** relying on backups.
-4. Configure the staging Worker with the exact local Origin/Turnstile hostname/action. Use an isolated staging endpoint, secure Worker secrets and a real Turnstile widget supporting the local frontend. Do not enable the CTA on production Pages or modify production DNS.
-5. Start the local frontend with `PUBLIC_SOURCING_CTA_ENABLED=true`, `PUBLIC_INQUIRY_API_URL=<exact staging endpoint>`, and the real public widget key. Complete the live matrix and obtain owner inbox confirmation.
+4. Configure the staging Worker with the exact selected staging Origin/Turnstile hostname/action. Use an isolated staging endpoint, secure Worker secrets and a real Turnstile widget supporting the local frontend. Do not enable the CTA on production Pages or modify production DNS.
+5. Build the temporary staging frontend with `PUBLIC_SOURCING_CTA_ENABLED=true`, `PUBLIC_INQUIRY_API_URL=<exact staging endpoint>`, and the real public widget key. Complete the live matrix and obtain owner inbox confirmation.
 
 ## Independent seven-day R2 lifecycle rule
 
@@ -61,7 +61,7 @@ Record outcomes separately; a local simulator pass must never be relabeled a liv
 | 3 | Staging-only mail failure after commit; customer still sees 201; retry/dead-letter recorded; no duplicate inquiry |
 | 4 | Lost-response retry with same key and fresh real challenge returns original inquiry ID |
 | 5 | Real Turnstile invalid/expired/consumed token rejected; real hostname/action checks enforced |
-| 6 | Production Origin and unrelated Origins rejected by the local-origin staging Worker; staging preflight returns only the exact local Origin |
+| 6 | Production Origin and unrelated Origins rejected by the staging Worker; staging preflight returns only the exact configured staging Origin |
 | 7 | Exercise the native 10/minute limiter using controlled synthetic traffic; observe 429 and recovery, allowing for coarse distributed limiting |
 | 8 | Oversize JSON and invalid normalized fields rejected with safe errors |
 | 9 | Synthetic XSS-looking text stored as data, safely displayed/escaped in actual owner mail |

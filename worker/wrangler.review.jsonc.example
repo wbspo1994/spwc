@@ -1,6 +1,6 @@
 // Incomplete isolated STAGING template; provisioning follows issue #1 after A–C checks pass.
 // Production publication, migrations, DNS and public CTA enable remain prohibited.
-// Staging strategy A: local frontend at http://127.0.0.1:4321 against isolated remote resources.
+// Staging strategy B: owner-authorized temporary human frontend against isolated remote resources.
 // Copy to an ignored worker/wrangler.review.jsonc and supply isolated STAGING resource IDs first.
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
@@ -10,8 +10,8 @@
   "workers_dev": false,
   "preview_urls": false,
   "vars": {
-    "ALLOWED_ORIGIN": "http://127.0.0.1:4321",
-    "TURNSTILE_HOSTNAME": "127.0.0.1",
+    "ALLOWED_ORIGIN": "https://spwc-cta-human-staging.wbspo1994.workers.dev",
+    "TURNSTILE_HOSTNAME": "spwc-cta-human-staging.wbspo1994.workers.dev",
     "TURNSTILE_ACTION": "sourcing_inquiry",
     "RESEND_FROM": "onboarding@resend.dev",
     "BACKUPS_ENABLED": "true"

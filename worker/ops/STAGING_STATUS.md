@@ -12,7 +12,7 @@ Date: 2026-10-07 (Asia/Shanghai). Branch: `codex/worker-d1-cta`.
 - Deployed only `spwc-inquiries-staging` at `https://spwc-inquiries-staging.wbspo1994.workers.dev`.
 - Read back deployed D1/R2/native-rate-limit bindings. The limiter uses a fresh account namespace after checking existing namespaces; no existing Worker settings were changed.
 - Read back cron schedules `*/5 * * * *` and `0 2 * * *` and the enabled staging endpoint. Preview URLs remain disabled.
-- The staging Worker uses exact Origin `http://127.0.0.1:4321`, Turnstile hostname `127.0.0.1`, and action `sourcing_inquiry` (strategy A).
+- Initially selected local strategy A. The owner subsequently authorized hosted strategy B; staging now uses exact Origin `https://spwc-cta-human-staging.wbspo1994.workers.dev`, matching Turnstile hostname, and unchanged action `sourcing_inquiry`. See [HUMAN_STAGING.md](HUMAN_STAGING.md).
 
 Verified R2 rule:
 
@@ -37,7 +37,11 @@ Both provider secrets are deployed. Real Resend failure/recovery, native Cron re
 
 The public site key and widget hostname were corrected. The owner saved/published the additional challenge destination; runtime revision 16 includes it in the effective allowlist. The proxy still returns `No approved upstream IPv4 address` for that destination. This may be an auxiliary probe and is not a proven cause of the widget failure. Normal clicks were delivered to the genuine widget in headed Chromium, but no usable token was obtained. Successful real-token customer submission, customer D1/mail-failure behavior and remaining token/analytics checks are still pending. Both Worker secrets, original sender, absence of temporary bindings/tables and remote counts 0/0 were rechecked. See [LIVE_MATRIX_STATUS.md](LIVE_MATRIX_STATUS.md) for every outcome and the material operator-seed/accelerated-schedule qualifications.
 
-## Resume sequence
+## Temporary human frontend
+
+Deployed independent static Worker `spwc-cta-human-staging` with noindex meta/response headers, no served sitemap and no production links/deployments. Exact staging CORS and preserved provider secrets/bindings/crons were read back; 137/137 tests including baseline 76 passed. Widget host authorization needs the owner because widget-management API returns 403. Cloudflare script read-back/routing are verified; direct public HTTP fetch from this executor is proxy-denied until its new-host network draft is activated. Stop for owner testing at the URL in [HUMAN_STAGING.md](HUMAN_STAGING.md); this does not mark any remaining customer-path matrix item passed.
+
+## Resume sequence (after owner test)
 
 1. Network publication is complete. Obtain a genuine completed challenge in a supported interactive browser, or resolve a confirmed provider/proxy cause. Preserve proxy/TLS verification and re-establish current Chromium CA trust after runtime restart when needed. No further publication or secret rotation is established as necessary.
 2. Start the exact local frontend and obtain a real token; execute all remaining customer-path cases, including true expiry/replay, real D1 rollback, 201 despite mail failure and full PII-free analytics.

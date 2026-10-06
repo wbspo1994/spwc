@@ -10,8 +10,9 @@ import { backup, pruneBackups } from "./backup";
 const productionOrigin = "https://steelpipe.wbspo.ccwu.cc";
 const maxBytes = 16 * 1024;
 export function allowedOrigin(env: Env): string {
-  // Production is fixed; the only supported override is the isolated local frontend.
-  return env.ALLOWED_ORIGIN === "http://127.0.0.1:4321"
+  // Only these exact isolated review frontends may override the fixed production origin.
+  return env.ALLOWED_ORIGIN === "http://127.0.0.1:4321" ||
+    env.ALLOWED_ORIGIN === "https://spwc-cta-human-staging.wbspo1994.workers.dev"
     ? env.ALLOWED_ORIGIN
     : productionOrigin;
 }

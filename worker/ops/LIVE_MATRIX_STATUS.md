@@ -4,6 +4,10 @@ Updated 2026-10-07 Asia/Shanghai. Branch `codex/worker-d1-cta`; latest follow-up
 
 **Public launch remains NO-GO.** Real email delivery and native Cron recovery have been verified, including owner inbox confirmation. The updated cloud network configuration is active, but the genuine Turnstile widget still has not produced a usable token in this execution environment. Its failure cause is not established; this is not a complete fourteen-item sign-off.
 
+## Current owner-test handoff
+
+The owner authorized and we deployed an independent temporary human frontend at **https://spwc-cta-human-staging.wbspo1994.workers.dev/steel-pipe-weight-calculator/**. It is noindex, omits sitemap and is unlinked from production. Staging now permits only this exact Origin and checks its matching hostname. Live preflight isolation passed; provider secrets, all other bindings and crons were preserved. 137/137 unit tests (76 unchanged baseline), both TypeScript checks and actual noindex/CTA build passed. Provider widget hostname authorization is owner-managed (API token returns 403); direct cloud-executor fetch of the frontend is proxy-denied. Cloudflare uploaded-script/routing read-back passed. See [HUMAN_STAGING.md](HUMAN_STAGING.md). **Stop for owner human testing; no customer-path PASS is inferred from deployment.** Previous local-Origin evidence below is historical and superseded by the new exact-Origin preflight check.
+
 ## Real provider and operations evidence
 
 - Both `TURNSTILE_SECRET_KEY` and `RESEND_API_KEY` are present in the active staging Worker, confirmed through secret-list and binding read-back. No values were read, printed or copied. The owner authorized test messages only to `wbspo1994@gmail.com`.

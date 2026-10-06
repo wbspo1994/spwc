@@ -1,6 +1,6 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { TestDB } from "./cta-db";
-import { handle, scheduled } from "../worker/src/index";
+import { handle, scheduled, allowedOrigin } from "../worker/src/index";
 import {
   processOutbox,
   escalate,
@@ -226,6 +226,24 @@ describe("CTA API and failure injection", () => {
   ])("rejects invalid origin %s before verification", async (Origin) => {
     expect((await submit(sample(), { Origin })).status).toBe(403);
     expect(calls).toHaveLength(0);
+  });
+  it("isolates the explicit human staging origin and rejects near matches", async () => {
+    const staging = "https://spwc-cta-human-staging.wbspo1994.workers.dev";
+    env.ALLOWED_ORIGIN = staging;
+    for (const [Origin, status] of [[staging, 204], [origin, 403],
+      [staging + ".evil.example", 403], [staging + "/", 403],
+      ["http://spwc-cta-human-staging.wbspo1994.workers.dev", 403]] as const) {
+      const response = await handle(request(null, {
+        Origin, "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type",
+      }, "OPTIONS"), env, context());
+      expect(response.status).toBe(status);
+      expect(response.headers.get("Access-Control-Allow-Origin")).toBe(status === 204 ? staging : null);
+    }
+    env.ALLOWED_ORIGIN = staging + ".evil.example";
+    expect(allowedOrigin(env)).toBe(origin);
+    env.ALLOWED_ORIGIN = undefined;
+    expect(allowedOrigin(env)).toBe(origin);
   });
   it("requires exact origin for preflight and only POST/content-type", async () => {
     expect(
