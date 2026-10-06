@@ -33,14 +33,14 @@ Account IDs, database IDs, native namespace IDs and any credentials are kept out
 
 ## Current live follow-up
 
-Cloud environment revision 10 activated the staging hostname. Real Chromium and unmocked Playwright API requests now reach the Worker through the inherited proxy with TLS verification. Exact-Origin rejection and native limiter/recovery checks passed. Safe malformed/oversize payload rejection and three PII-free browser analytics events were observed.
+Both provider secrets are deployed. Real Resend failure/recovery, native Cron retry and once-only SLA notification, accelerated daily retention purge, private R2 snapshot and restore into a separate remote D1 are verified. The owner confirmed both test emails reached the inbox. Exact-Origin and native limiter/recovery checks passed. The original staging Worker/settings are restored and operator fixtures, snapshots, temporary tables and restore database were cleaned; remote inquiry/outbox counts returned to 0/0.
 
-Provider-dependent checks remain blocked: repeated remote secret-list requests still return no deployed secrets, and the real Turnstile challenge returns 400 without a usable token. No inquiry persisted or real email was sent. The owner has authorized test notifications to the existing owner recipient. See [LIVE_MATRIX_STATUS.md](LIVE_MATRIX_STATUS.md) for the complete fourteen-item status and transport diagnosis; the earlier proxy tunnel rejection is resolved.
+The public site key and widget hostname were corrected. The remaining challenge transport requires `brunhild.challenges.cloudflare.com`; the running proxy rejected it. This exact destination was added to the cloud network draft and requires save/publish activation. Successful real-token customer submission, customer D1/mail-failure behavior and remaining token/analytics checks are still pending. See [LIVE_MATRIX_STATUS.md](LIVE_MATRIX_STATUS.md) for every outcome and the material operator-seed/accelerated-schedule qualifications.
 
 ## Resume sequence
 
-1. Securely add and **deploy** `TURNSTILE_SECRET_KEY` and `RESEND_API_KEY` in the exact staging Worker. Verify deployed names, never values.
-2. Check the configured real widget's site key, matching secret, and allowed local hostname `127.0.0.1`; resolve its challenge 400 responses. Do not bypass verification or substitute test keys.
-3. Resume the full matrix in `STAGING.md`, obtaining owner inbox confirmation after a successful real submission. Clean up synthetic staging records and restore any failure-injection changes.
+1. Activate the saved network draft containing the extra real challenge destination. Preserve proxy/TLS verification and re-establish current Chromium CA trust after runtime restart when needed.
+2. Start the exact local frontend and obtain a real token; execute all remaining customer-path cases, including true expiry/replay, real D1 rollback, 201 despite mail failure and full PII-free analytics.
+3. Obtain customer-path owner receipt confirmation, clean test fixtures, restore staging settings and report every outcome separately. Full live sign-off remains incomplete.
 
-No production Pages, production DNS, production database/bucket, or existing Worker was modified. No public frontend CTA was enabled. Public launch remains NO-GO.
+No production resource or public frontend CTA was modified. Public launch remains NO-GO.
