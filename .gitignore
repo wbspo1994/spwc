@@ -20,3 +20,9 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Local isolated Worker state and browser test artifacts
+worker/.wrangler/
+worker/test-results/
+worker/playwright-report/
+worker/wrangler.review.jsonc

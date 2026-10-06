@@ -1,0 +1,4 @@
+# Copy to worker/.dev.vars (ignored) for isolated manual local development only.
+# Supply values securely; leave empty until available. These are NOT API keys.
+TURNSTILE_SECRET_KEY=
+RESEND_API_KEY=

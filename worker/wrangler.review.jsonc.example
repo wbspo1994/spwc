@@ -1,0 +1,20 @@
+// Review template only. Do not deploy, apply remote migrations, or configure DNS before owner approval.
+// Copy to an ignored worker/wrangler.review.jsonc and supply isolated STAGING resource IDs first.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "spwc-inquiries-staging",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-04-03",
+  "workers_dev": false,
+  "preview_urls": false,
+  "vars": {
+    "TURNSTILE_HOSTNAME": "steelpipe.wbspo.ccwu.cc",
+    "TURNSTILE_ACTION": "sourcing_inquiry",
+    "RESEND_FROM": "onboarding@resend.dev",
+    "BACKUPS_ENABLED": "true"
+  },
+  "d1_databases": [{"binding":"DB","database_name":"REVIEW_REQUIRED","database_id":"REVIEW_REQUIRED","migrations_dir":"../migrations"}],
+  "r2_buckets": [{"binding":"BACKUPS","bucket_name":"REVIEW_REQUIRED_PRIVATE_BUCKET"}],
+  "ratelimits": [{"name":"INQUIRY_RATE_LIMITER","namespace_id":"1001","simple":{"limit":10,"period":60}}],
+  "triggers": {"crons":["*/5 * * * *","0 2 * * *"]}
+}

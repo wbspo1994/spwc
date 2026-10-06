@@ -1,0 +1,19 @@
+{
+  "name": "spwc-inquiry-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --config wrangler.local.jsonc --test-scheduled",
+    "migrate:local": "wrangler d1 migrations apply spwc-inquiries-local --local --config wrangler.local.jsonc",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "wrangler": "4.76.0",
+    "@cloudflare/workers-types": "4.20260702.1",
+    "typescript": "5.9.3",
+    "@playwright/test": "1.58.2",
+    "esbuild": "0.27.3",
+    "miniflare": "4.20260317.1"
+  }
+}

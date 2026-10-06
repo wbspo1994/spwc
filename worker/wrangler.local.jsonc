@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "spwc-inquiries-local",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-04-03",
+  "workers_dev": false,
+  "preview_urls": false,
+  "dev": {"ip": "127.0.0.1", "port": 8787},
+  "vars": {
+    "ALLOWED_ORIGIN": "http://127.0.0.1:4321",
+    "TURNSTILE_HOSTNAME": "127.0.0.1",
+    "TURNSTILE_ACTION": "sourcing_inquiry",
+    "RESEND_FROM": "onboarding@resend.dev",
+    "BACKUPS_ENABLED": "true"
+  },
+  "d1_databases": [{"binding": "DB", "database_name": "spwc-inquiries-local", "database_id": "00000000-0000-0000-0000-000000000001", "migrations_dir": "../migrations"}],
+  "r2_buckets": [{"binding": "BACKUPS", "bucket_name": "spwc-inquiries-backups-local"}],
+  "ratelimits": [{"name": "INQUIRY_RATE_LIMITER", "namespace_id": "1001", "simple": {"limit": 10, "period": 60}}],
+  "triggers": {"crons": ["*/5 * * * *", "0 2 * * *"]}
+}

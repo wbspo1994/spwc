@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import SourcingCTA from '../components/SourcingCTA.astro';
 import { pipeWeight } from '../lib/calculator';
 import { VERIFICATION_LABELS } from '../lib/dimensions';
 import b3610 from '../data/b36.10-2022.json';
@@ -170,6 +171,8 @@ const faqs = [
   </div>
 </div>
 
+<SourcingCTA />
+
 <h2>How to use</h2>
 <ol class="steps">
   <li>Choose <strong>Actual dimensions</strong> if you measured the pipe (caliper OD, wall from spec or UT gauge), or <strong>NPS / Schedule</strong> to look up nominal dimensions from ASME B36.10-2022 / B36.19-2022.</li>
@@ -266,7 +269,7 @@ const faqs = [
   function markEdited() {
     if (!userEdited) { userEdited = true; els.exampleTag.style.display = 'none'; }
   }
-  document.querySelectorAll('input,select').forEach((el) =>
+  document.querySelectorAll('.calc-card input, .calc-card select').forEach((el) =>
     el.addEventListener('input', () => { markEdited(); recalc(); }));
 
   els.tabActual.addEventListener('click', () => setMode('actual'));

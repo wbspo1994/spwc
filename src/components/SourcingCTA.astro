@@ -1,0 +1,50 @@
+---
+const enabled = import.meta.env.PUBLIC_SOURCING_CTA_ENABLED === 'true';
+const api = import.meta.env.PUBLIC_INQUIRY_API_URL || '';
+const sitekey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+// Require an explicit API and public site key; never enable through default production config.
+const configured = enabled && api && sitekey;
+---
+{configured && <section class="card sourcing-cta" id="sourcing-cta" data-api={api.replace(/\/$/,'')} data-sitekey={sitekey} aria-labelledby="sourcing-title">
+ <h2 id="sourcing-title">Request sourcing assistance</h2>
+ <p>Share your pipe dimensions and destination for sourcing assistance. Typically within 2 business days.</p>
+ <button type="button" id="sourcing-open" aria-expanded="false" aria-controls="sourcing-form">Request sourcing assistance</button>
+ <form id="sourcing-form" hidden>
+  <button type="button" id="sourcing-prefill">Use current calculator values</button>
+  <p id="sourcing-snapshot" aria-live="polite"></p>
+  <fieldset><legend>Pipe dimensions (theoretical weight)</legend>
+   <label>Outside diameter (mm)<input name="od_mm" type="number" step="any" min="0.001" max="10000" required /></label>
+   <label>Wall thickness (mm)<input name="wall_mm" type="number" step="any" min="0.001" max="5000" required /></label>
+   <label>Density assumption (kg/m³)<input name="density_kg_m3" type="number" step="any" min="0.001" max="30000" required /></label>
+   <label>Length per piece (m)<input name="length_m" type="number" step="any" min="0.001" max="10000" required /></label>
+  </fieldset>
+  <p id="sourcing-weight" aria-live="polite"></p>
+  <label>Quantity<input name="quantity_value" type="number" step="1" min="1" max="10000000" required /></label>
+  <label>Quantity unit<select name="quantity_unit"><option value="pieces">Pieces</option><option value="total_length">Total length (metres)</option></select></label>
+  <label>Destination country (two-letter country code, e.g. US or CN)<input name="destination_country" maxlength="2" minlength="2" pattern="[A-Za-z]{2}" required autocomplete="country" /></label>
+  <label>Email<input name="email" type="email" maxlength="254" required autocomplete="email" /></label>
+  <label>Company (optional)<input name="company" maxlength="200" autocomplete="organization" /></label>
+  <label>Notes (optional)<textarea name="notes" maxlength="2000" rows="4"></textarea></label>
+  <p>We use these details to handle your inquiry and retain it for 12 months. Private operational backups may retain deleted details for up to 7 additional days. See <a href="/privacy/">Privacy</a> and <a href="/terms/">Terms</a>. No account is required.</p>
+  <div id="sourcing-challenge"></div>
+  <button type="button" id="sourcing-refresh">Refresh verification</button>
+  <p id="sourcing-status" role="status" aria-live="polite"></p>
+  <p id="sourcing-error" role="alert" hidden></p>
+  <button type="submit" id="sourcing-submit" disabled>Submit request</button>
+  <p>If you cannot submit, contact <a href="mailto:wbspo1994@gmail.com">wbspo1994@gmail.com</a>.</p>
+ </form>
+ <p id="sourcing-success" tabindex="-1" role="status" aria-live="polite" hidden></p>
+</section>}
+<style>
+ .sourcing-cta {margin-top:24px;}
+ label {display:block;margin:12px 0;}
+ input,select,textarea {display:block;width:100%;padding:9px;border:1px solid var(--line);border-radius:6px;font:inherit;}
+ button {padding:10px 16px;margin:8px 0;cursor:pointer;}
+ button:disabled {cursor:wait;}
+ fieldset {margin:12px 0;border:1px solid var(--line);}
+ #sourcing-error {color:#b91c1c;}
+</style>
+<script>
+ import {initSourcingForm} from '../lib/sourcing-form';
+ initSourcingForm();
+</script>
