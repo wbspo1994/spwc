@@ -12,9 +12,10 @@ Flow (per Cloudflare Pages Direct Upload docs):
   5. POST /pages/assets/upsert-hashes (JWT)
   6. POST /accounts/{id}/pages/projects/{name}/deployments (multipart manifest)
 
-Uses the stored custom.cloudflare credential via authd surrogate for the
-account-scoped calls; the short-lived upload JWT is used as a plain Bearer
-for the asset-store calls, per Cloudflare's documented workflow.
+Account-scoped calls use a Cloudflare API token from the environment of the
+machine running this script; the short-lived upload JWT is used as a plain
+Bearer for the asset-store calls, per Cloudflare's documented workflow.
+Set CF_ACCOUNT_ID to your Cloudflare account ID before running.
 """
 from __future__ import annotations
 
@@ -34,7 +35,9 @@ from dynamic_credentials import (
 
 API_BASE = "https://api.cloudflare.com/client/v4"
 ALLOWED = ["api.cloudflare.com"]
-ACCOUNT_ID = "1782392a1e203f73ef36e8c74f02e850"
+ACCOUNT_ID = os.environ.get("CF_ACCOUNT_ID")
+if not ACCOUNT_ID:
+    raise SystemExit("Set the CF_ACCOUNT_ID environment variable to your Cloudflare account ID.")
 
 # Pages-handled config files: not hashed assets, sent as separate form fields.
 CONFIG_FILES = {"_headers", "_redirects"}
